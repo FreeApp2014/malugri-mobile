@@ -37,6 +37,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         commandCenter.playCommand.addTarget { [unowned self] event in
             self.am.resume();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;
+            self.pauseBTN.setTitle("Pause", for: UIControl.State.normal);
             return .success;
         }
         
@@ -46,7 +47,9 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
             self.am.pause();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
             print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
-            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate())));
+            //if lastRenderTime returned overblown sample number fix the brain retardation before pushing 
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(floor(Double(self.am.pausedSampleNumber > self.apple ? self.am.pausedSampleNumber - self.apple : self.am.pausedSampleNumber ) / Double(gHEAD1_sample_rate())));
+            self.pauseBTN.setTitle("Resume", for: UIControl.State.normal);
             return .success;
         }
     }
@@ -117,6 +120,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         }
         return true;
     }
+    var apple: Int64 = 0;
     let am = AudioManager();
     func handleFile(path: String) {
         if (readFile(path: path)){
@@ -150,13 +154,12 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
                 print("Failed to set the audio session category and mode: \(error.localizedDescription)")
                 
             }
-            
             //Actual playback
             switch (decodeMode){
             case 0:
                 let buffer = createAudioBuffer(gPCM_samples(), offset: 0, needToInitFormat: true);
                 am.initialize(format: format);
-                print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
+                apple = self.am.pausedSampleNumber; // Thanks apple for making AVAudioNode so fucking retarded
                 self.am.playBuffer(buffer: buffer);
                 am.genPB();
                 break;
@@ -164,7 +167,6 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
                 let blockbuffer = getBufferBlock(0);
                 let buffer = createBlockBuffer(blockbuffer!, needToInitFormat: true, bs: Int(gHEAD1_blocks_samples()));
                 am.initialize(format: format);
-                print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
                 self.am.playBuffer(buffer: buffer);
                 break
             default:
@@ -184,6 +186,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     @IBOutlet weak var lblBlockSize: UILabel!
     @IBOutlet weak var lblTotalBlocks: UILabel!
     @IBOutlet weak var lblTotalSamples: UILabel!
+    @IBOutlet weak var pauseBTN: UIButton!
     
     @IBAction func stopButton(_ sender: Any) {
         self.am.stopBtn()
@@ -191,12 +194,17 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     @IBAction func pauseBtn(_ sender: UIButton) {
         if (sender.currentTitle! == "Pause") {
             self.am.pause()
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
+            print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(floor(Double(self.am.pausedSampleNumber > self.apple ? self.am.pausedSampleNumber - self.apple : self.am.pausedSampleNumber ) / Double(gHEAD1_sample_rate())));
             sender.setTitle("Resume", for: UIControl.State.normal);
         } else {
             self.am.resume()
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;
             sender.setTitle("Pause", for: UIControl.State.normal);
         }
     }
+    @IBOutlet weak var tempLbl: UILabel!
 }
 
 func popupAlert(parent: UIViewController, title: String, message: String){
