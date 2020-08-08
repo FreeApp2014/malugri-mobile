@@ -34,6 +34,7 @@ class AudioManager:NSObject {
             print(format);
             self.audioEngine.connect(audioPlayerNode, to: audioEngine.mainMixerNode, format: format);
             try self.audioEngine.start();
+            self.pausedSampleNumber = self.getCurrentSampleNumber()
         } catch {
             popupAlert(parent: UIApplication.shared.windows[0].rootViewController!, title: "Error", message: "Failed to start audio engine")
         }
@@ -79,7 +80,7 @@ class AudioManager:NSObject {
                 if (self.loopCount > gHEAD1_total_blocks()){
                     self.loopCount = 1;
                     self.releasedSampleNumber = self.audioPlayerNode.lastRenderTime!.sampleTime - Int64(gHEAD1_loop_start());
-                    MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = gHEAD1_loop_start() * gHEAD1_sample_rate()
+                    MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = gHEAD1_loop_start() / gHEAD1_sample_rate()
                 }
                 loopBuffer = self.getNextChunk();
             }
@@ -94,7 +95,7 @@ class AudioManager:NSObject {
                 if (self.needsLoop || decodeMode == 1){
                     if (decodeMode == 0) {self.loopCount += 1;}
                     self.playBuffer(buffer: loopBuffer);
-                    MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = gHEAD1_loop_start() * gHEAD1_sample_rate()
+                    MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = gHEAD1_loop_start() / gHEAD1_sample_rate()
                 } else {
                     closeBrstm();
                 }

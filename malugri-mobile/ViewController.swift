@@ -17,8 +17,15 @@ var decodeMode = 0;
 
 class ViewController: UIViewController, UIDocumentPickerDelegate {
 
+    @objc func notificationHandler(notification:  Notification){
+        self.labelFN.text! = (notification.object as! URL).lastPathComponent;
+        handleFile(path: (notification.object as! URL).path);
+    }
+    
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        NotificationCenter.default.addObserver(self, selector: #selector(self.notificationHandler), name: NSNotification.Name(rawValue: "FileOpen"), object: nil);
         // Do any additional setup after loading the view, typically from a nib.
     }
     func setupRemoteTransportControls() {
@@ -29,6 +36,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         // Add handler for Play Command
         commandCenter.playCommand.addTarget { [unowned self] event in
             self.am.resume();
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;
             return .success;
         }
         
@@ -36,6 +44,9 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         // Add handler for Pause Command
         commandCenter.pauseCommand.addTarget { [unowned self] event in
             self.am.pause();
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
+            print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate())));
             return .success;
         }
     }
@@ -50,7 +61,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
     @IBAction func buttonclick(_ sender: Any) {
-        let documentPicker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeText),String(kUTTypeContent),String(kUTTypeItem),String(kUTTypeData)], in: .import);
+        let documentPicker = UIDocumentPickerViewController(documentTypes: ["space.freeappsw.malugri-mobile.brstm", "space.freeappsw.malugri-mobile.bfstm"], in: .import);
         documentPicker.delegate = self
         self.present(documentPicker, animated: true);
     }
@@ -145,6 +156,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
             case 0:
                 let buffer = createAudioBuffer(gPCM_samples(), offset: 0, needToInitFormat: true);
                 am.initialize(format: format);
+                print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
                 self.am.playBuffer(buffer: buffer);
                 am.genPB();
                 break;
@@ -152,6 +164,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
                 let blockbuffer = getBufferBlock(0);
                 let buffer = createBlockBuffer(blockbuffer!, needToInitFormat: true, bs: Int(gHEAD1_blocks_samples()));
                 am.initialize(format: format);
+                print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
                 self.am.playBuffer(buffer: buffer);
                 break
             default:
@@ -171,6 +184,19 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     @IBOutlet weak var lblBlockSize: UILabel!
     @IBOutlet weak var lblTotalBlocks: UILabel!
     @IBOutlet weak var lblTotalSamples: UILabel!
+    
+    @IBAction func stopButton(_ sender: Any) {
+        self.am.stopBtn()
+    }
+    @IBAction func pauseBtn(_ sender: UIButton) {
+        if (sender.currentTitle! == "Pause") {
+            self.am.pause()
+            sender.setTitle("Resume", for: UIControl.State.normal);
+        } else {
+            self.am.resume()
+            sender.setTitle("Pause", for: UIControl.State.normal);
+        }
+    }
 }
 
 func popupAlert(parent: UIViewController, title: String, message: String){
