@@ -86,3 +86,8 @@ extern "C" unsigned int gFileType(){
 extern "C" unsigned int gFileCodec() {
     return brstmp->codec;
 }
+
+extern "C" int gBlockSize() {
+    printf("%d", sizeof(brstmp->PCM_buffer));
+    return sizeof(brstmp->PCM_buffer);
+}

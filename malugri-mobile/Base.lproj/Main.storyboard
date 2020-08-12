@@ -35,15 +35,9 @@
                                         </connections>
                                     </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="S6S-dg-r6d"/>
-                                    <barButtonItem style="plain" id="APc-TW-fnE">
-                                        <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="lrx-fp-gWR">
-                                            <rect key="frame" x="323" y="5.5" width="36" height="33"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <state key="normal" title="Stop"/>
-                                        </button>
+                                    <barButtonItem title="Stop" id="0Zi-iM-Drd">
                                         <connections>
-                                            <action selector="stopButton:" destination="BYZ-38-t0r" id="Pen-tA-PQo"/>
+                                            <action selector="stopButton:" destination="BYZ-38-t0r" id="1Pd-qy-pHI"/>
                                         </connections>
                                     </barButtonItem>
                                 </items>
@@ -200,7 +194,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gCi-c8-QuQ">
-                                <rect key="frame" x="0.0" y="531" width="375" height="36"/>
+                                <rect key="frame" x="0.0" y="407" width="375" height="36"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                 <state key="normal" title="Pause"/>
@@ -208,11 +202,28 @@
                                     <action selector="pauseBtn:" destination="BYZ-38-t0r" eventType="touchUpInside" id="7ve-ko-1J3"/>
                                 </connections>
                             </button>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="wEa-11-cOE">
+                                <rect key="frame" x="10" y="533" width="353" height="29"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <segments>
+                                    <segment title="Automatic"/>
+                                    <segment title="Always"/>
+                                    <segment title="Never"/>
+                                </segments>
+                            </segmentedControl>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Use getbuffer" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LQN-OP-s1m">
+                                <rect key="frame" x="10" y="509" width="84" height="16"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="choiceGB" destination="wEa-11-cOE" id="Ys8-mw-OZG"/>
                         <outlet property="labelFN" destination="fXe-oU-LOv" id="CC5-0X-2MR"/>
                         <outlet property="lblBlockSize" destination="0ps-bL-g9H" id="J19-xO-LM4"/>
                         <outlet property="lblCodec" destination="bq0-EO-YgI" id="Bfq-n6-dck"/>

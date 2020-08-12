@@ -35,7 +35,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         
         // Add handler for Play Command
         commandCenter.playCommand.addTarget { [unowned self] event in
-            self.am.resume();
+           // self.am.resume();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;
             self.pauseBTN.setTitle("Pause", for: UIControl.State.normal);
             return .success;
@@ -44,11 +44,13 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         
         // Add handler for Pause Command
         commandCenter.pauseCommand.addTarget { [unowned self] event in
-            self.am.pause();
+            //self.am.pause();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
             print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
-            //if lastRenderTime returned overblown sample number fix the brain retardation before pushing 
+            
+            //if lastRenderTime returned overblown sample number fix the brain retardation before pushing
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(floor(Double(self.am.pausedSampleNumber > self.apple ? self.am.pausedSampleNumber - self.apple : self.am.pausedSampleNumber ) / Double(gHEAD1_sample_rate())));
+            
             self.pauseBTN.setTitle("Resume", for: UIControl.State.normal);
             return .success;
         }
@@ -72,6 +74,8 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         self.labelFN.text! = urls[0].lastPathComponent;
         handleFile(path: urls[0].path);
     }
+    @IBOutlet weak var choiceGB: UISegmentedControl!
+
     @IBOutlet weak var labelFN: UILabel!
     func readFile(path: String, convert: Bool = false) -> Bool {
         var filesize: UInt64 = 0;
@@ -79,14 +83,13 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         do {
             let fileat = try FileManager.default.attributesOfItem(atPath: path);
             filesize = fileat[.size] as? UInt64 ?? UInt64(0);
-//            if (filesize >= 5000000 && self.choiceGB.indexOfSelectedItem == 0) {
-//                decodeMode = 1;
-//            } else if (self.choiceGB.indexOfSelectedItem == 1){
-//                decodeMode = 0;
-//            } else if (self.choiceGB.indexOfSelectedItem == 2) {
-//                decodeMode = 1;
-//            }
-            decodeMode = 0;
+            if (filesize >= 5000000 && self.choiceGB.selectedSegmentIndex == 0) {
+                decodeMode = 1;
+            } else if (self.choiceGB.selectedSegmentIndex == 1){
+                decodeMode = 0;
+            } else if (self.choiceGB.selectedSegmentIndex == 2) {
+                decodeMode = 1;
+            }
         } catch let error as NSError {
             print("FileAttribute error: \(error)");
             return false;
@@ -120,12 +123,12 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         }
         return true;
     }
-    var apple: Int64 = 0;
+    var apple: Int64 = 0; //Store the weird value reported by lastRenderTime for correct time counting
     let am = AudioManager();
     func handleFile(path: String) {
         if (readFile(path: path)){
             if(am.wasUsed){
-                am.stopBtn();
+                //am.stopBtn();
                 print("a");
                 self.am.i = 0;
                 Thread.sleep(forTimeInterval: 0.05);
@@ -160,14 +163,14 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
                 let buffer = createAudioBuffer(gPCM_samples(), offset: 0, needToInitFormat: true);
                 am.initialize(format: format);
                 apple = self.am.pausedSampleNumber; // Thanks apple for making AVAudioNode so fucking retarded
-                self.am.playBuffer(buffer: buffer);
+                //self.am.playBuffer(buffer: buffer);
                 am.genPB();
                 break;
             case 1:
                 let blockbuffer = getBufferBlock(0);
                 let buffer = createBlockBuffer(blockbuffer!, needToInitFormat: true, bs: Int(gHEAD1_blocks_samples()));
                 am.initialize(format: format);
-                self.am.playBuffer(buffer: buffer);
+                //self.am.playBuffer(buffer: buffer);
                 break
             default:
                 print("if this is printed then idk what happened to this world")
@@ -189,17 +192,17 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     @IBOutlet weak var pauseBTN: UIButton!
     
     @IBAction func stopButton(_ sender: Any) {
-        self.am.stopBtn()
+        //self.am.stopBtn();
     }
     @IBAction func pauseBtn(_ sender: UIButton) {
         if (sender.currentTitle! == "Pause") {
-            self.am.pause()
+           // self.am.pause()
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
             print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(floor(Double(self.am.pausedSampleNumber > self.apple ? self.am.pausedSampleNumber - self.apple : self.am.pausedSampleNumber ) / Double(gHEAD1_sample_rate())));
             sender.setTitle("Resume", for: UIControl.State.normal);
         } else {
-            self.am.resume()
+            //self.am.resume()
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;
             sender.setTitle("Pause", for: UIControl.State.normal);
         }
