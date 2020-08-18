@@ -7,10 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8423E53824DD5BE900D127C8 /* dspadpcm_encoder.c in Sources */ = {isa = PBXBuildFile; fileRef = 8423E53024DD5BE800D127C8 /* dspadpcm_encoder.c */; };
-		8423E53924DD5BE900D127C8 /* d_formats in Resources */ = {isa = PBXBuildFile; fileRef = 8423E53424DD5BE800D127C8 /* d_formats */; };
 		8423E53A24DD5BE900D127C8 /* brstm-main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8423E53524DD5BE900D127C8 /* brstm-main.cpp */; };
-		8423E53B24DD5BE900D127C8 /* e_formats in Resources */ = {isa = PBXBuildFile; fileRef = 8423E53624DD5BE900D127C8 /* e_formats */; };
 		8423E53D24DD62B000D127C8 /* openrevolution.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8423E53C24DD62AF00D127C8 /* openrevolution.a */; };
 		8423E54024DD634800D127C8 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8423E53F24DD634800D127C8 /* AVFoundation.framework */; };
 		8423E54224DD6B1E00D127C8 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8423E54124DD6B1E00D127C8 /* AudioManager.swift */; };
@@ -23,15 +20,8 @@
 
 /* Begin PBXFileReference section */
 		8423E52F24DD5BE700D127C8 /* malugri-mobile-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "malugri-mobile-Bridging-Header.h"; sourceTree = "<group>"; };
-		8423E53024DD5BE800D127C8 /* dspadpcm_encoder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dspadpcm_encoder.c; sourceTree = "<group>"; };
-		8423E53124DD5BE800D127C8 /* audio_decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio_decoder.h; sourceTree = "<group>"; };
-		8423E53224DD5BE800D127C8 /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utils.h; sourceTree = "<group>"; };
-		8423E53324DD5BE800D127C8 /* brstm_encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = brstm_encode.h; sourceTree = "<group>"; };
-		8423E53424DD5BE800D127C8 /* d_formats */ = {isa = PBXFileReference; lastKnownFileType = folder; path = d_formats; sourceTree = "<group>"; };
 		8423E53524DD5BE900D127C8 /* brstm-main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "brstm-main.cpp"; sourceTree = "<group>"; };
-		8423E53624DD5BE900D127C8 /* e_formats */ = {isa = PBXFileReference; lastKnownFileType = folder; path = e_formats; sourceTree = "<group>"; };
-		8423E53724DD5BE900D127C8 /* brstm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = brstm.h; sourceTree = "<group>"; };
-		8423E53C24DD62AF00D127C8 /* openrevolution.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = openrevolution.a; path = "malugri-mobile/librevolution/openrevolution.a"; sourceTree = "<group>"; };
+		8423E53C24DD62AF00D127C8 /* openrevolution.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = openrevolution.a; sourceTree = "<group>"; };
 		8423E53F24DD634800D127C8 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		8423E54124DD6B1E00D127C8 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		842CCBD824DC583F005899C4 /* malugri-mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "malugri-mobile.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -59,14 +49,8 @@
 		8423E52E24DD5BC700D127C8 /* librevolution */ = {
 			isa = PBXGroup;
 			children = (
-				8423E53124DD5BE800D127C8 /* audio_decoder.h */,
-				8423E53324DD5BE800D127C8 /* brstm_encode.h */,
+				8423E53C24DD62AF00D127C8 /* openrevolution.a */,
 				8423E53524DD5BE900D127C8 /* brstm-main.cpp */,
-				8423E53724DD5BE900D127C8 /* brstm.h */,
-				8423E53424DD5BE800D127C8 /* d_formats */,
-				8423E53024DD5BE800D127C8 /* dspadpcm_encoder.c */,
-				8423E53624DD5BE900D127C8 /* e_formats */,
-				8423E53224DD5BE800D127C8 /* utils.h */,
 				8423E52F24DD5BE700D127C8 /* malugri-mobile-Bridging-Header.h */,
 			);
 			path = librevolution;
@@ -83,7 +67,6 @@
 		842CCBCF24DC583F005899C4 = {
 			isa = PBXGroup;
 			children = (
-				8423E53C24DD62AF00D127C8 /* openrevolution.a */,
 				842CCBDA24DC583F005899C4 /* malugri-mobile */,
 				842CCBD924DC583F005899C4 /* Products */,
 				8423E53E24DD634800D127C8 /* Frameworks */,
@@ -177,8 +160,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8423E53B24DD5BE900D127C8 /* e_formats in Resources */,
-				8423E53924DD5BE900D127C8 /* d_formats in Resources */,
 				842CCBE624DC5842005899C4 /* LaunchScreen.storyboard in Resources */,
 				842CCBE324DC5842005899C4 /* Assets.xcassets in Resources */,
 				842CCBE124DC5840005899C4 /* Main.storyboard in Resources */,
@@ -194,7 +175,6 @@
 			files = (
 				842CCBDE24DC5840005899C4 /* ViewController.swift in Sources */,
 				8423E53A24DD5BE900D127C8 /* brstm-main.cpp in Sources */,
-				8423E53824DD5BE900D127C8 /* dspadpcm_encoder.c in Sources */,
 				8423E54224DD6B1E00D127C8 /* AudioManager.swift in Sources */,
 				842CCBDC24DC5840005899C4 /* AppDelegate.swift in Sources */,
 			);
@@ -345,6 +325,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = N6M3GGC92B;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "malugri-mobile/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -371,6 +352,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = N6M3GGC92B;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "malugri-mobile/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (

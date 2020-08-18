@@ -4,10 +4,71 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
-#include "brstm.h"
+
+// Header definitions
+struct Brstm {
+    //Byte order mark
+    bool BOM = 0;
+    //File type, 1 = BRSTM, see above for full list
+    unsigned int  file_format   = 0;
+    //Audio codec, 0 = PCM8, 1 = PCM16, 2 = DSPADPCM
+    unsigned int  codec         = 0;
+    bool          loop_flag     = 0;
+    unsigned int  num_channels  = 0;
+    unsigned long sample_rate   = 0;
+    unsigned long loop_start    = 0;
+    unsigned long total_samples = 0;
+    unsigned long audio_offset  = 0;
+    unsigned long total_blocks  = 0;
+    unsigned long blocks_size   = 0;
+    unsigned long blocks_samples  = 0;
+    unsigned long final_block_size  = 0;
+    unsigned long final_block_samples = 0;
+    unsigned long final_block_size_p  = 0;
+    
+    //track information
+    unsigned int  num_tracks      = 0;
+    unsigned int  track_desc_type = 0;
+    unsigned int  track_num_channels[8] = {0,0,0,0,0,0,0,0};
+    unsigned int  track_lchannel_id [8] = {0,0,0,0,0,0,0,0};
+    unsigned int  track_rchannel_id [8] = {0,0,0,0,0,0,0,0};
+    unsigned int  track_volume      [8] = {0,0,0,0,0,0,0,0};
+    unsigned int  track_panning     [8] = {0,0,0,0,0,0,0,0};
+    
+    int16_t* PCM_samples[16];
+    int16_t* PCM_buffer [16];
+    
+    unsigned char* ADPCM_data   [16];
+    unsigned char* ADPCM_buffer [16]; //Not used yet
+    int16_t  ADPCM_coefs    [16][16];
+    int16_t* ADPCM_hsamples_1   [16];
+    int16_t* ADPCM_hsamples_2   [16];
+    
+    //Encoder
+    unsigned char* encoded_file = nullptr;
+    unsigned long  encoded_file_size = 0;
+    
+    //Things you probably shouldn't touch
+    //block cache
+    int16_t* PCM_blockbuffer[16];
+    int PCM_blockbuffer_currentBlock = -1;
+    bool getbuffer_useBuffer = true;
+    //Audio stream format,
+    //0 for normal block data in BRSTM and similar files
+    //1 for WAV which has 1 sample per block
+    //so the block size here can be made bigger and block reads
+    //won't be made one by one for every sample
+    unsigned int audio_stream_format = 0;
+};
 
 Brstm* brstmp;
 std::ifstream brstmfile;
+
+unsigned char brstm_read(Brstm* brstmi,const unsigned char* fileData,signed int debugLevel,uint8_t decodeAudio);
+void brstm_getbuffer(Brstm * brstmi,const unsigned char* fileData,unsigned long sampleOffset,unsigned int bufferSamples);
+void brstm_fstream_getbuffer(Brstm * brstmi,std::ifstream& stream,unsigned long sampleOffset,unsigned int bufferSamples);
+unsigned char brstm_fstream_read(Brstm * brstmi,std::ifstream& stream,signed int debugLevel);
+void brstm_close(Brstm * brstmi);
 
 //Getters for outer world access
 

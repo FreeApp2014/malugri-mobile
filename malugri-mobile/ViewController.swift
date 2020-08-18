@@ -131,16 +131,18 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
                 Thread.sleep(forTimeInterval: 0.05);
             }
             //Put stuff to the information screen
-            self.lblFileType.text! = AudioManager.resolveAudioFormat(UInt(gFileType()));
-            self.lblCodec.text! = AudioManager.resolveAudioCodec(UInt(gFileCodec()));
-            self.lblSampleRate.text! = String(gHEAD1_sample_rate()) + " Hz";
-            self.lblLoop.text! = (gHEAD1_loop() == 1 ? "Yes" : "No");
-            self.lblTotalSamples.text! = String(gHEAD1_total_samples());
-            self.lblDuration.text! = String(floor(Double(gHEAD1_total_samples()) / Double(gHEAD1_sample_rate()))) + " seconds";
-            self.lblLoopPoint.text! = String(gHEAD1_loop_start());
-            self.lblBlockSize.text! = String(gHEAD1_blocks_samples()) + " samples";
-            self.lblTotalBlocks.text! = String(gHEAD1_total_blocks());
-            
+            DispatchQueue.main.async {
+                self.lblFileType.text! = AudioManager.resolveAudioFormat(UInt(gFileType()));
+                self.lblCodec.text! = AudioManager.resolveAudioCodec(UInt(gFileCodec()));
+                self.lblSampleRate.text! = String(gHEAD1_sample_rate()) + " Hz";
+                self.lblLoop.text! = (gHEAD1_loop() == 1 ? "Yes" : "No");
+                self.lblTotalSamples.text! = String(gHEAD1_total_samples());
+                self.lblDuration.text! = String(floor(Double(gHEAD1_total_samples()) / Double(gHEAD1_sample_rate()))) + " seconds";
+                self.lblLoopPoint.text! = String(gHEAD1_loop_start());
+                self.lblBlockSize.text! = String(gHEAD1_blocks_samples()) + " samples";
+                self.lblTotalBlocks.text! = String(gHEAD1_total_blocks());
+            }
+        
             //Configure iOS media api crap
             setupRemoteTransportControls();
             publishDataToMPNP();
