@@ -16,9 +16,14 @@
 		842CCBE124DC5840005899C4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 842CCBDF24DC5840005899C4 /* Main.storyboard */; };
 		842CCBE324DC5842005899C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 842CCBE224DC5842005899C4 /* Assets.xcassets */; };
 		842CCBE624DC5842005899C4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 842CCBE424DC5842005899C4 /* LaunchScreen.storyboard */; };
+		84970D1124EEB20000D6C82F /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84970D0E24EEB1FF00D6C82F /* Accelerate.framework */; };
+		84970D1324EEB20000D6C82F /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84970D1024EEB1FF00D6C82F /* AudioToolbox.framework */; };
+		97B9FC57F7A6FCB22F45C7C6 /* libPods-malugri-mobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D2BE4CE3B68AFAF14A4D67D9 /* libPods-malugri-mobile.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3DC8D720FF4497560A071274 /* Pods-malugri-mobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-malugri-mobile.debug.xcconfig"; path = "Target Support Files/Pods-malugri-mobile/Pods-malugri-mobile.debug.xcconfig"; sourceTree = "<group>"; };
+		775BCA4CDFE36DCABCDD2640 /* Pods-malugri-mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-malugri-mobile.release.xcconfig"; path = "Target Support Files/Pods-malugri-mobile/Pods-malugri-mobile.release.xcconfig"; sourceTree = "<group>"; };
 		8423E52F24DD5BE700D127C8 /* malugri-mobile-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "malugri-mobile-Bridging-Header.h"; sourceTree = "<group>"; };
 		8423E53524DD5BE900D127C8 /* brstm-main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "brstm-main.cpp"; sourceTree = "<group>"; };
 		8423E53C24DD62AF00D127C8 /* openrevolution.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = openrevolution.a; sourceTree = "<group>"; };
@@ -31,6 +36,9 @@
 		842CCBE224DC5842005899C4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		842CCBE524DC5842005899C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		842CCBE724DC5842005899C4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		84970D0E24EEB1FF00D6C82F /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		84970D1024EEB1FF00D6C82F /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		D2BE4CE3B68AFAF14A4D67D9 /* libPods-malugri-mobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-malugri-mobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,14 +46,26 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84970D1124EEB20000D6C82F /* Accelerate.framework in Frameworks */,
+				84970D1324EEB20000D6C82F /* AudioToolbox.framework in Frameworks */,
 				8423E54024DD634800D127C8 /* AVFoundation.framework in Frameworks */,
 				8423E53D24DD62B000D127C8 /* openrevolution.a in Frameworks */,
+				97B9FC57F7A6FCB22F45C7C6 /* libPods-malugri-mobile.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3896CCCE8416559E718C0B19 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				3DC8D720FF4497560A071274 /* Pods-malugri-mobile.debug.xcconfig */,
+				775BCA4CDFE36DCABCDD2640 /* Pods-malugri-mobile.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		8423E52E24DD5BC700D127C8 /* librevolution */ = {
 			isa = PBXGroup;
 			children = (
@@ -59,7 +79,10 @@
 		8423E53E24DD634800D127C8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				84970D0E24EEB1FF00D6C82F /* Accelerate.framework */,
+				84970D1024EEB1FF00D6C82F /* AudioToolbox.framework */,
 				8423E53F24DD634800D127C8 /* AVFoundation.framework */,
+				D2BE4CE3B68AFAF14A4D67D9 /* libPods-malugri-mobile.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -70,6 +93,7 @@
 				842CCBDA24DC583F005899C4 /* malugri-mobile */,
 				842CCBD924DC583F005899C4 /* Products */,
 				8423E53E24DD634800D127C8 /* Frameworks */,
+				3896CCCE8416559E718C0B19 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -103,6 +127,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 842CCBEA24DC5842005899C4 /* Build configuration list for PBXNativeTarget "malugri-mobile" */;
 			buildPhases = (
+				715DB8010504A5256963876B /* [CP] Check Pods Manifest.lock */,
 				842CCBD424DC583F005899C4 /* Sources */,
 				842CCBD524DC583F005899C4 /* Frameworks */,
 				842CCBD624DC583F005899C4 /* Resources */,
@@ -167,6 +192,31 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		715DB8010504A5256963876B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-malugri-mobile-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		842CCBD424DC583F005899C4 /* Sources */ = {
@@ -320,6 +370,7 @@
 		};
 		842CCBEB24DC5842005899C4 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3DC8D720FF4497560A071274 /* Pods-malugri-mobile.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -347,6 +398,7 @@
 		};
 		842CCBEC24DC5842005899C4 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 775BCA4CDFE36DCABCDD2640 /* Pods-malugri-mobile.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

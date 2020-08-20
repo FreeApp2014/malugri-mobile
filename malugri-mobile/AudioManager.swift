@@ -10,6 +10,7 @@ import UIKit
 import AVFoundation
 import MediaPlayer
 
+
 var needLoop = true;
 var loopBuffer: AVAudioPCMBuffer = AVAudioPCMBuffer();
 
@@ -28,17 +29,14 @@ class AudioManager:NSObject {
     var needsToPlay: Bool = true;
     var wasUsed: Bool = false;
     
-    //TODO: Looping and on demand decoding
-    func initialize(format: AVAudioFormat) -> Void {
-        do {
-            print(format);
-            self.audioEngine.connect(audioPlayerNode, to: audioEngine.mainMixerNode, format: format);
-            try self.audioEngine.start();
-            self.pausedSampleNumber = self.getCurrentSampleNumber()
-        } catch {
-            popupAlert(parent: UIApplication.shared.windows[0].rootViewController!, title: "Error", message: "Failed to start audio engine")
-        }
+    // MARK: - Initialization
+    var output: EZOutput? = nil;
+    fileprivate let dataSource = DataSource();
+    
+    func initialize (format: AVAudioFormat){
+        self.output = EZOutput(dataSource: dataSource, inputFormat: AudioStreamBasicDescription(mSampleRate: Float64(format.sampleRate), mFormatID: kAudioFormatLinearPCM, mFormatFlags: kLinearPCMFormatFlagIsSignedInteger, mBytesPerPacket: 4, mFramesPerPacket: 1, mBytesPerFrame: 4, mChannelsPerFrame: format.channelCount, mBitsPerChannel: 16, mReserved: 0));
     }
+    
     var loopCount = 0;
     var needsLoop = true;
     var i: Double = 0;
@@ -72,43 +70,9 @@ class AudioManager:NSObject {
     }
     func playBuffer(buffer: AVAudioPCMBuffer) -> Void {
         wasUsed = true;
-        
-        playerThread.async{
-            self.needsToPlay = true;
-            if (decodeMode == 1) {
-                self.loopCount += 1;
-                if (self.loopCount > gHEAD1_total_blocks()){
-                    self.loopCount = 1;
-                    self.releasedSampleNumber = self.audioPlayerNode.lastRenderTime!.sampleTime - Int64(gHEAD1_loop_start());
-                    MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = gHEAD1_loop_start() / gHEAD1_sample_rate()
-                }
-                loopBuffer = self.getNextChunk();
-            }
-            self.audioPlayerNode.play();
-            if (self.getCurrentSampleNumber() < 0) {
-                self.releasedSampleNumber -=  self.getCurrentSampleNumber();
-            }
-            self.pausedSampleNumber = 0;
-            self.audioPlayerNode.scheduleBuffer(buffer,  completionHandler: {
-                if (decodeMode == 0) {self.releasedSampleNumber = self.audioPlayerNode.lastRenderTime!.sampleTime - Int64(gHEAD1_loop_start());}
-                self.needsToPlay = false;
-                if (self.needsLoop || decodeMode == 1){
-                    if (decodeMode == 0) {self.loopCount += 1;}
-                    self.playBuffer(buffer: loopBuffer);
-                    MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = gHEAD1_loop_start() / gHEAD1_sample_rate()
-                } else {
-                    closeBrstm();
-                }
-            });
-            while (self.needsToPlay){
-                if (self.audioPlayerNode.isPlaying) {
-                    self.e = self.getCurrentSampleNumber();
-                    self.i =  Double(self.e) / Double(gHEAD1_sample_rate());
-                }
-                Thread.sleep(forTimeInterval: 0.001);
-            };
-        };
+        output!.startPlayback();
     }
+    // Functions don't mean anything, just to not cause compilation error
     func state() -> Bool {
         return self.audioPlayerNode.isPlaying;
     }
@@ -116,33 +80,19 @@ class AudioManager:NSObject {
         return self.needsToPlay;
     }
     func resume() -> Void {
-        self.playerThread.resume();
-        do { try self.audioEngine.start();} catch {print("err")}
-        self.audioPlayerNode.play(at: nil);
-        self.releasedSampleNumber = self.audioPlayerNode.lastRenderTime!.sampleTime;
-        print(pausedSampleNumber);
-        print(releasedSampleNumber);
+ 
     }
     
     func pause() -> Void {
-        self.pausedSampleNumber = self.getCurrentSampleNumber()
-        self.audioPlayerNode.pause();
-        self.audioEngine.pause();
-        self.playerThread.suspend();
+
     }
     func stopBtn() -> Void {
-        needsLoop = false;
-        wasUsed = false;
-        stop();
+
     }
     func stop() -> Void {
-        self.releasedSampleNumber = self.audioPlayerNode.lastRenderTime!.sampleTime;
-        self.needsToPlay = false;
-        self.audioPlayerNode.stop();
-        self.audioPlayerNode.reset();
-        self.audioEngine.reset();
-        self.initialize(format: format);
+        
     }
+    // Old functions to make audio buffers
     func genPB(){
         loopBuffer = createAudioBuffer(gPCM_samples(), offset: Int(gHEAD1_loop_start()), needToInitFormat: false);
     }
@@ -154,3 +104,33 @@ class AudioManager:NSObject {
         return createBlockBuffer(bufferblock!, needToInitFormat: false, bs: bs);
     }
 }
+
+// MARK: - Data source
+
+@objc fileprivate class DataSource: NSObject, EZOutputDataSource {
+    
+    private var counter: UInt = 0;
+    
+    func output(_ output: EZOutput!, shouldFill audioBufferList: UnsafeMutablePointer<AudioBufferList>!, withNumberOfFrames frames: UInt32, timestamp: UnsafePointer<AudioTimeStamp>!) -> OSStatus {
+        print(frames, timestamp.pointee.mSampleTime);
+        let samples = getbuffer(counter, frames);
+        let audioBuffer: UnsafeMutablePointer<Int16> = audioBufferList[0].mBuffers.mData!.assumingMemoryBound(to: Int16.self);
+        for i in 1...frames {
+            if (i % 2 == 0) {
+                audioBuffer[Int(i)] = samples![1]![Int(i)]
+            } else {
+                audioBuffer[Int(i)] = samples![0]![Int(i)]
+            }
+        }
+        counter += UInt(frames);
+        return noErr;
+    }
+    
+}
+/*
+ - (OSStatus)        output:(EZOutput *)output
+ shouldFillAudioBufferList:(AudioBufferList *)audioBufferList
+ withNumberOfFrames:(UInt32)frames
+ timestamp:(const AudioTimeStamp *)timestamp
+ */
+

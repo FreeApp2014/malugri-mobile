@@ -116,6 +116,12 @@ extern "C" int16_t**  getBufferBlock(unsigned long sampleOffset){
     brstm_fstream_getbuffer(brstmp, brstmfile, sampleOffset, readLength);
     return brstmp->PCM_buffer;
 }
+
+extern "C" int16_t** getbuffer(unsigned long offset, uint32_t frames) {
+    brstm_fstream_getbuffer(brstmp, brstmfile, offset, frames);
+    return brstmp->PCM_buffer;
+}
+
 extern "C" void closeBrstm(){
     brstm_close(brstmp);
     delete brstmp;

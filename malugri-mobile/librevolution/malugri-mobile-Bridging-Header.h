@@ -23,3 +23,6 @@ unsigned long gHEAD1_final_block_samples();
 unsigned char readFstreamBrstm();
 unsigned int gFileType();
 unsigned int gFileCodec();
+int16_t** getbuffer(unsigned long offset, uint32_t frames);
+#include "EZAudio.h"
+#include "EZOutput.h"

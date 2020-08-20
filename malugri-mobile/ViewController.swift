@@ -86,7 +86,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
 //            } else if (self.choiceGB.indexOfSelectedItem == 2) {
 //                decodeMode = 1;
 //            }
-            decodeMode = 0;
+            decodeMode = 1;
         } catch let error as NSError {
             print("FileAttribute error: \(error)");
             return false;
