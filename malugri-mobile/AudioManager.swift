@@ -72,26 +72,23 @@ class AudioManager:NSObject {
         wasUsed = true;
         output!.startPlayback();
     }
-    // Functions don't mean anything, just to not cause compilation error
     func state() -> Bool {
-        return self.audioPlayerNode.isPlaying;
+        return output!.isPlaying;
     }
     func varPlay() -> Bool {
         return self.needsToPlay;
     }
     func resume() -> Void {
- 
+        output!.startPlayback();
     }
     
     func pause() -> Void {
-
+        output!.stopPlayback();
     }
     func stopBtn() -> Void {
-
+        output!.stopPlayback();
     }
-    func stop() -> Void {
-        
-    }
+    
     // Old functions to make audio buffers
     func genPB(){
         loopBuffer = createAudioBuffer(gPCM_samples(), offset: Int(gHEAD1_loop_start()), needToInitFormat: false);
@@ -112,7 +109,6 @@ class AudioManager:NSObject {
     private var counter: UInt = 0;
     
     func output(_ output: EZOutput!, shouldFill audioBufferList: UnsafeMutablePointer<AudioBufferList>!, withNumberOfFrames frames: UInt32, timestamp: UnsafePointer<AudioTimeStamp>!) -> OSStatus {
-        print(frames, timestamp.pointee.mSampleTime);
         let samples = getbuffer(counter, frames);
         let audioBuffer: UnsafeMutablePointer<Int16> = audioBufferList[0].mBuffers.mData!.assumingMemoryBound(to: Int16.self);
         for i in 1...frames {
