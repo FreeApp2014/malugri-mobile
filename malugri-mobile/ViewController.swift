@@ -46,9 +46,8 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         commandCenter.pauseCommand.addTarget { [unowned self] event in
             self.am.pause();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
-            print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
             //if lastRenderTime returned overblown sample number fix the brain retardation before pushing 
-            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(floor(Double(self.am.pausedSampleNumber > self.apple ? self.am.pausedSampleNumber - self.apple : self.am.pausedSampleNumber ) / Double(gHEAD1_sample_rate())));
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0;
             self.pauseBTN.setTitle("Resume", for: UIControl.State.normal);
             return .success;
         }
@@ -161,7 +160,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
             case 0:
                 let buffer = createAudioBuffer(gPCM_samples(), offset: 0, needToInitFormat: true);
                 am.initialize(format: format);
-                apple = self.am.pausedSampleNumber; // Thanks apple for making AVAudioNode so fucking retarded
+                // Thanks apple for making AVAudioNode so fucking retarded
                 self.am.playBuffer(buffer: buffer);
                 am.genPB();
                 break;
@@ -197,8 +196,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         if (sender.currentTitle! == "Pause") {
             self.am.pause()
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
-            print(Int(ceil(Double(self.am.pausedSampleNumber) / Double(gHEAD1_sample_rate()))));
-            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(floor(Double(self.am.pausedSampleNumber > self.apple ? self.am.pausedSampleNumber - self.apple : self.am.pausedSampleNumber ) / Double(gHEAD1_sample_rate())));
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0;
             sender.setTitle("Resume", for: UIControl.State.normal);
         } else {
             self.am.resume()

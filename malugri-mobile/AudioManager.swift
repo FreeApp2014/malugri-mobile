@@ -34,20 +34,17 @@ class AudioManager:NSObject {
     fileprivate let dataSource = DataSource();
     
     func initialize (format: AVAudioFormat){
-        self.output = EZOutput(dataSource: dataSource, inputFormat: AudioStreamBasicDescription(mSampleRate: Float64(format.sampleRate), mFormatID: kAudioFormatLinearPCM, mFormatFlags: kLinearPCMFormatFlagIsSignedInteger, mBytesPerPacket: 4, mFramesPerPacket: 1, mBytesPerFrame: 4, mChannelsPerFrame: format.channelCount, mBitsPerChannel: 16, mReserved: 0));
+        self.output = EZOutput(dataSource: dataSource, inputFormat: AudioStreamBasicDescription(mSampleRate: Float64(format.sampleRate), mFormatID: kAudioFormatLinearPCM, mFormatFlags: kLinearPCMFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked, mBytesPerPacket: 4, mFramesPerPacket: 1, mBytesPerFrame: 4, mChannelsPerFrame: format.channelCount, mBitsPerChannel: 16, mReserved: 0));
     }
     
     var loopCount = 0;
     var needsLoop = true;
     var i: Double = 0;
-    let playerThread = DispatchQueue.global(qos: .userInteractive);
-    var e: Int64 = 0;
-    var pausedSampleNumber: Int64 = 0;
-    var releasedSampleNumber: Int64 = 0;
-    var tsToReturn = false;
+    
+    // MARK: - Getter functions
     
     func getCurrentSampleNumber() -> Int64{
-        return self.audioPlayerNode.lastRenderTime!.sampleTime - releasedSampleNumber + pausedSampleNumber;
+        return 0; //TODO: Implement global sampleNumber function
     }
     
     static func resolveAudioFormat(_ formatCode: UInt) -> String {
@@ -72,6 +69,8 @@ class AudioManager:NSObject {
         wasUsed = true;
         output!.startPlayback();
     }
+    
+    // MARK: - UI buttons
     func state() -> Bool {
         return output!.isPlaying;
     }
@@ -111,12 +110,12 @@ class AudioManager:NSObject {
     func output(_ output: EZOutput!, shouldFill audioBufferList: UnsafeMutablePointer<AudioBufferList>!, withNumberOfFrames frames: UInt32, timestamp: UnsafePointer<AudioTimeStamp>!) -> OSStatus {
         let samples = getbuffer(counter, frames);
         let audioBuffer: UnsafeMutablePointer<Int16> = audioBufferList[0].mBuffers.mData!.assumingMemoryBound(to: Int16.self);
-        for i in 1...frames {
-            if (i % 2 == 0) {
-                audioBuffer[Int(i)] = samples![1]![Int(i)]
-            } else {
-                audioBuffer[Int(i)] = samples![0]![Int(i)]
-            }
+        var i = 0, j = 0;
+        while (i < frames*2){
+            audioBuffer[Int(i)] = samples![0]![j];
+            audioBuffer[Int(i)+1] = samples![0]![j]
+            i+=2;
+            j+=1;
         }
         counter += UInt(frames);
         return noErr;
