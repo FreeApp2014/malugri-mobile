@@ -34,11 +34,37 @@ class AudioManager: NSObject, MGAudioBackend {
     fileprivate let dataSource = DataSource();
     
     func initialize (format: AVAudioFormat){
-        self.output = EZOutput(dataSource: dataSource, inputFormat: AudioStreamBasicDescription(mSampleRate: Float64(format.sampleRate), mFormatID: kAudioFormatLinearPCM, mFormatFlags: kLinearPCMFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked, mBytesPerPacket: 4, mFramesPerPacket: 1, mBytesPerFrame: 4, mChannelsPerFrame: format.channelCount, mBitsPerChannel: 16, mReserved: 0));
+        self.output = EZOutput(dataSource: dataSource, inputFormat: AudioStreamBasicDescription(mSampleRate: Float64(format.sampleRate),
+                                                                        mFormatID: kAudioFormatLinearPCM,
+                                                                        mFormatFlags: kLinearPCMFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
+                                                                        mBytesPerPacket: 4,
+                                                                        mFramesPerPacket: 1,
+                                                                        mBytesPerFrame: 4,
+                                                                        mChannelsPerFrame: format.channelCount,
+                                                                        mBitsPerChannel: 16,
+                                                                        mReserved: 0));
+        var b: UInt32 = 4096; //Frame per slice value for the audio unit
+
+        // Set frames per slice to 4096 to allow playback with locked screen
+        
+        EZAudioUtilities.checkResult(AudioUnitSetProperty(output!.outputAudioUnit,
+                                                          kAudioUnitProperty_MaximumFramesPerSlice,
+                                                          kAudioUnitScope_Global,
+                                                          0,
+                                                          &b,
+                                                          UInt32(MemoryLayout.size(ofValue: b))),
+                                     operation: "Failed to set maximum frames per slice on mixer node".cString(using: .utf8));
     }
     
     var loopCount = 0;
-    var needsLoop = true;
+    var needsLoop: Bool {
+        get {
+            return needLoop;
+        }
+        set (a) {
+            needLoop = a;
+        }
+    }
     var i: Double = 0;
     
     // MARK: - Getter functions
@@ -74,7 +100,9 @@ class AudioManager: NSObject, MGAudioBackend {
         output!.stopPlayback();
     }
     func stop() -> Void {
-        output!.stopPlayback();
+        if (self.state) {output!.stopPlayback();}
+        closeBrstm();
+        dataSource.counter = 0;
     }
 }
 
@@ -84,7 +112,17 @@ class AudioManager: NSObject, MGAudioBackend {
     
     public var counter: UInt = 0;
     
-    func output(_ output: EZOutput!, shouldFill audioBufferList: UnsafeMutablePointer<AudioBufferList>!, withNumberOfFrames frames: UInt32, timestamp: UnsafePointer<AudioTimeStamp>!) -> OSStatus {
+    func output(_ output: EZOutput!,
+                shouldFill audioBufferList: UnsafeMutablePointer<AudioBufferList>!,
+                withNumberOfFrames frames: UInt32,
+                timestamp: UnsafePointer<AudioTimeStamp>!) -> OSStatus {
+        if (counter > gHEAD1_total_samples()) {
+            if (needLoop) {
+                counter = gHEAD1_loop_start();
+            } else {
+                output.stopPlayback();
+            }
+        }
         let samples = getbuffer(counter, frames);
         let audioBuffer: UnsafeMutablePointer<Int16> = audioBufferList[0].mBuffers.mData!.assumingMemoryBound(to: Int16.self);
         var i = 0, j = 0;
@@ -105,7 +143,7 @@ protocol MGAudioBackend {
     func initialize (format: AVAudioFormat) -> Void;
     func resume() -> Void;
     func pause() -> Void;
-    func stop() -> Void; 
+    func stop() -> Void;
     var state: Bool { get }; // true when playing, false when not;
     var needsLoop: Bool { get set}; // Sets automatically to true or false depending on file loop flag and can be explicitly changed
     func play() -> Void; //Assuming the api can get the samples from gPCM_buffer or using the getbuffer / getBufferBlock function

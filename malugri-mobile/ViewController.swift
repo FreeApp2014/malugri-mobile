@@ -157,16 +157,17 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
             //Actual playback
             switch (decodeMode){
             case 0:
-                let buffer = createAudioBuffer(gPCM_samples(), offset: 0, needToInitFormat: true);
                 let channelCount = (gHEAD3_num_channels() > 2 ? 2 : gHEAD3_num_channels());
                 format = AVAudioFormat.init(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: Double(gHEAD1_sample_rate()), channels: UInt32(channelCount), interleaved: false)!;
                 am.initialize(format: format);
+                am.needsLoop = (gHEAD1_loop() == 1);
                 self.am.play();
                 break;
             case 1:
                 let channelCount = (gHEAD3_num_channels() > 2 ? 2 : gHEAD3_num_channels());
                 format = AVAudioFormat.init(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: Double(gHEAD1_sample_rate()), channels: UInt32(channelCount), interleaved: false)!;
                 am.initialize(format: format);
+                am.needsLoop = (gHEAD1_loop() == 1);
                 self.am.play();
                 break
             default:
