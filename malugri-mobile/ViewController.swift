@@ -73,11 +73,11 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     }
     @IBOutlet weak var labelFN: UILabel!
     func readFile(path: String, convert: Bool = false) -> Bool {
-        var filesize: UInt64 = 0;
         initStruct();
         do {
-            let fileat = try FileManager.default.attributesOfItem(atPath: path);
-            filesize = fileat[.size] as? UInt64 ?? UInt64(0);
+            // Playback mode, for this implementation always 1
+//            let fileat = try FileManager.default.attributesOfItem(atPath: path);
+//            filesize = fileat[.size] as? UInt64 ?? UInt64(0);
 //            if (filesize >= 5000000 && self.choiceGB.indexOfSelectedItem == 0) {
 //                decodeMode = 1;
 //            } else if (self.choiceGB.indexOfSelectedItem == 1){
@@ -96,7 +96,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         let resultRead = file.withUnsafeBytes { (u8Ptr: UnsafePointer<UInt8>) -> Bool in
             let stat = readABrstm(u8Ptr, 1, true);
             if (stat > 127){
-                popupAlert(parent: self, title:"Error reading file", message: "brstm_read returned error " + String(stat));
+                MalugriUtil.popupAlert(parent: self, title:"Error reading file", message: "brstm_read returned error " + String(stat));
                 return false;
             }
             return true;
@@ -106,12 +106,12 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         case 1: let pointer: UnsafePointer<Int8>? = NSString(string: path).utf8String;
         let stati = createIFSTREAMObject(strdup(pointer)!);
         if (stati != 1){
-            popupAlert(parent: self, title:"Error reading file", message: "ifstream::open returned error " + String(stati));
+            MalugriUtil.popupAlert(parent: self, title:"Error reading file", message: "ifstream::open returned error " + String(stati));
             return false;
         }
         let stat = readFstreamBrstm();
         if (stat > 127){
-            popupAlert(parent: self, title:"Error reading file", message: "brstm_read returned error " + String(stat));
+            MalugriUtil.popupAlert(parent: self, title:"Error reading file", message: "brstm_read returned error " + String(stat));
             return false;
         }
         break;
@@ -119,20 +119,19 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         }
         return true;
     }
-    var apple: Int64 = 0;
     let am = AudioManager();
     func handleFile(path: String) {
         if (readFile(path: path)){
             if(am.wasUsed){
-                am.stopBtn();
+                am.stop();
                 print("a");
                 self.am.i = 0;
                 Thread.sleep(forTimeInterval: 0.05);
             }
             //Put stuff to the information screen
             DispatchQueue.main.async {
-                self.lblFileType.text! = AudioManager.resolveAudioFormat(UInt(gFileType()));
-                self.lblCodec.text! = AudioManager.resolveAudioCodec(UInt(gFileCodec()));
+                self.lblFileType.text! = MalugriUtil.resolveAudioFormat(UInt(gFileType()));
+                self.lblCodec.text! = MalugriUtil.resolveAudioCodec(UInt(gFileCodec()));
                 self.lblSampleRate.text! = String(gHEAD1_sample_rate()) + " Hz";
                 self.lblLoop.text! = (gHEAD1_loop() == 1 ? "Yes" : "No");
                 self.lblTotalSamples.text! = String(gHEAD1_total_samples());
@@ -159,16 +158,16 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
             switch (decodeMode){
             case 0:
                 let buffer = createAudioBuffer(gPCM_samples(), offset: 0, needToInitFormat: true);
+                let channelCount = (gHEAD3_num_channels() > 2 ? 2 : gHEAD3_num_channels());
+                format = AVAudioFormat.init(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: Double(gHEAD1_sample_rate()), channels: UInt32(channelCount), interleaved: false)!;
                 am.initialize(format: format);
-                // Thanks apple for making AVAudioNode so fucking retarded
-                self.am.playBuffer(buffer: buffer);
-                am.genPB();
+                self.am.play();
                 break;
             case 1:
-                let blockbuffer = getBufferBlock(0);
-                let buffer = createBlockBuffer(blockbuffer!, needToInitFormat: true, bs: Int(gHEAD1_blocks_samples()));
+                let channelCount = (gHEAD3_num_channels() > 2 ? 2 : gHEAD3_num_channels());
+                format = AVAudioFormat.init(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: Double(gHEAD1_sample_rate()), channels: UInt32(channelCount), interleaved: false)!;
                 am.initialize(format: format);
-                self.am.playBuffer(buffer: buffer);
+                self.am.play();
                 break
             default:
                 print("if this is printed then idk what happened to this world")
@@ -190,7 +189,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     @IBOutlet weak var pauseBTN: UIButton!
     
     @IBAction func stopButton(_ sender: Any) {
-        self.am.stopBtn()
+        self.am.stop();
     }
     @IBAction func pauseBtn(_ sender: UIButton) {
         if (sender.currentTitle! == "Pause") {
@@ -204,14 +203,9 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
             sender.setTitle("Pause", for: UIControl.State.normal);
         }
     }
-    @IBOutlet weak var tempLbl: UILabel!
 }
 
-func popupAlert(parent: UIViewController, title: String, message: String){
-    let asToPresent: UIAlertController = UIAlertController.init(title: title, message: message, preferredStyle: UIAlertController.Style.alert);
-    asToPresent.addAction(UIAlertAction.init(title: "Dismiss", style: UIAlertAction.Style.cancel, handler: nil));
-    parent.present(asToPresent, animated: true, completion: nil);
-}
+
 func createAudioBuffer(_ PCMSamples: UnsafeMutablePointer<UnsafeMutablePointer<Int16>?>, offset: Int, needToInitFormat: Bool, format16: Bool = false) -> AVAudioPCMBuffer {
     let channelCount = (gHEAD3_num_channels() > 2 ? 2 : gHEAD3_num_channels());
     if (!format16){
@@ -246,23 +240,3 @@ func createAudioBuffer(_ PCMSamples: UnsafeMutablePointer<UnsafeMutablePointer<I
     return buffer!;
 }
 
-func createBlockBuffer(_ blockbuffer: UnsafeMutablePointer<UnsafeMutablePointer<Int16>?>, needToInitFormat: Bool, bs: Int) -> AVAudioPCMBuffer {
-    let channelCount = (gHEAD3_num_channels() > 2 ? 2 : gHEAD3_num_channels());
-    if (needToInitFormat) {format = AVAudioFormat.init(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: Double(gHEAD1_sample_rate()), channels: UInt32(channelCount), interleaved: false)!;}
-    let buffer = AVAudioPCMBuffer.init(pcmFormat: format, frameCapacity: UInt32(bs));
-    buffer!.frameLength = AVAudioFrameCount(UInt32(bs));
-    let samples16 = blockbuffer;
-    var i: Int = 0;
-    i = 0;
-    var j: Int = 0;
-    while (UInt32(j) < channelCount){
-        while (UInt(i) < bs) {
-            buffer?.floatChannelData![j][i] =  Float32(Float32(samples16[j]![i]) / Float32(32768));
-            i += 1;
-        }
-        i = 0;
-        j += 1;
-    };
-    i = 0;
-    return buffer!;
-}
