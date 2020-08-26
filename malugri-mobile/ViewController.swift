@@ -23,10 +23,15 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         handleFile(path: (notification.object as! URL).path);
     }
     
+    @objc func exitNotification(notification: Notification){
+        self.playerController.backend.stop();
+        self.playerController.closeFile();
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(self.notificationHandler), name: NSNotification.Name(rawValue: "FileOpen"), object: nil);
+        NotificationCenter.default.addObserver(self, selector: #selector(self.exitNotification), name: NSNotification.Name(rawValue: "ExitPlayer"), object: nil);
     }
     func setupRemoteTransportControls() {
         // Get the shared MPRemoteCommandCenter
@@ -36,6 +41,15 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         // Add handler for Play Command
         commandCenter.playCommand.addTarget { [unowned self] event in
             self.playerController.backend.play();
+            DispatchQueue.global().async {
+                while (self.playerController.backend.state) {
+                    DispatchQueue.main.async {
+                        self.ElapsedTimeLabel.text = Int(self.playerController.backend.currentSampleNumber / self.playerController.fileInformation.sampleRate).hmsString;
+                        self.timeSlider.value = Float(self.playerController.backend.currentSampleNumber) / Float(self.playerController.fileInformation.totalSamples);
+                    }
+                    Thread.sleep(forTimeInterval: 0.05);
+                }
+            }
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;
             self.pauseBTN.setTitle("Pause", for: UIControl.State.normal);
             return .success;
@@ -102,6 +116,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
             self.lblLoopPoint.text! = String(info.loopPoint);
             self.lblBlockSize.text! = String(info.blockSize) + " samples";
             self.lblTotalBlocks.text! = String(info.totalBlocks);
+            self.TotalTimeLabel.text! = info.duration.hmsString;
         }
         
         //Configure iOS media api crap
@@ -120,7 +135,25 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         
         //Actual playback
         playerController.backend.play();
-  
+        
+        DispatchQueue.global().async {
+            while (self.playerController.backend.state) {
+                DispatchQueue.main.async {
+                    self.ElapsedTimeLabel.text = Int(self.playerController.backend.currentSampleNumber / self.playerController.fileInformation.sampleRate).hmsString;
+                    self.timeSlider.value = Float(self.playerController.backend.currentSampleNumber) / Float(self.playerController.fileInformation.totalSamples);
+                }
+                Thread.sleep(forTimeInterval: 0.05);
+            }
+        }
+    }
+    
+    @IBOutlet weak var timeSlider: UISlider!
+    @IBOutlet weak var ElapsedTimeLabel: UILabel!
+    @IBOutlet weak var TotalTimeLabel: UILabel!
+    
+    
+    @IBAction func seek(_ sender: Any) {
+        self.playerController.backend.currentSampleNumber = UInt(self.timeSlider.value * Float(self.playerController.fileInformation.totalSamples));
     }
     
     // Field labels
@@ -144,10 +177,19 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         if (sender.currentTitle! == "Pause") {
             self.playerController.backend.pause();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
-            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0;
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(self.playerController.backend.currentSampleNumber / self.playerController.fileInformation.sampleRate);
             sender.setTitle("Resume", for: UIControl.State.normal);
         } else {
             self.playerController.backend.play();
+            DispatchQueue.global().async {
+                while (self.playerController.backend.state) {
+                    DispatchQueue.main.async {
+                        self.ElapsedTimeLabel.text = Int(self.playerController.backend.currentSampleNumber / self.playerController.fileInformation.sampleRate).hmsString;
+                        self.timeSlider.value = Float(self.playerController.backend.currentSampleNumber) / Float(self.playerController.fileInformation.totalSamples);
+                    }
+                    Thread.sleep(forTimeInterval: 0.05);
+                }
+            }
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;
             sender.setTitle("Pause", for: UIControl.State.normal);
         }

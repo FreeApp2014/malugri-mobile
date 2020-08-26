@@ -28,7 +28,7 @@ struct MGFileInformation {
 // MARK: - Main player class
 
 class MalugriPlayer {
-    public let backend: MGAudioBackend;
+    public var backend: MGAudioBackend;
     public var currentFile: String = "";
     public var fileInformation: MGFileInformation {
         get {

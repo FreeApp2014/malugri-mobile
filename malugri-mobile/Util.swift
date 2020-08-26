@@ -9,6 +9,17 @@
 import Foundation
 import UIKit;
 
+extension Int {
+    var hmsString: String {
+        get {
+            let hours = Int(Double(self) / 3600.0);
+            let minutes = (self % 3600) / 60;
+            let seconds = (self % 3600) % 60;
+            return (hours != 0 ? String(hours) + ":" : "") + (minutes < 10 ? "0" + String(minutes) : String(minutes)) + ":" + (seconds < 10 ? "0" + String(seconds) : String(seconds))
+        }
+    }
+}
+
 class MalugriUtil {
     static func resolveAudioFormat(_ formatCode: UInt) -> String {
         switch (formatCode) {
