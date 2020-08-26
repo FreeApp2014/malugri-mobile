@@ -87,7 +87,6 @@ class MGEZAudioBackend: NSObject, MGAudioBackend {
     }
     func stop() -> Void {
         if (self.state) {output!.stopPlayback();}
-        closeBrstm();
         dataSource.counter = 0;
     }
 }

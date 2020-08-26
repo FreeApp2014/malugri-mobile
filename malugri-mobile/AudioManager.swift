@@ -20,7 +20,9 @@ enum MGError: Error {
 }
 
 struct MGFileInformation {
-    public let fileType: String, codecCode: UInt32, codecString: String, sampleRate: UInt, looping: Bool, duration: Int, channelCount, totalSamples, loopPoint, blockSize, totalBlocks: UInt;
+    public let fileType: String, codecCode: UInt32, codecString: String,
+    sampleRate: UInt, looping: Bool, duration: Int,
+    channelCount, totalSamples, loopPoint, blockSize, totalBlocks: UInt;
 }
 
 // MARK: - Main player class
@@ -30,7 +32,16 @@ class MalugriPlayer {
     public var currentFile: String = "";
     public var fileInformation: MGFileInformation {
         get {
-            return MGFileInformation(fileType: MalugriUtil.resolveAudioFormat(UInt(gFileType())), codecCode: gFileCodec(), codecString: MalugriUtil.resolveAudioCodec(UInt(gFileCodec())), sampleRate: gHEAD1_sample_rate(), looping: gHEAD1_loop() == 1, duration: Int(floor(Double(gHEAD1_total_samples()) / Double(gHEAD1_sample_rate()))), channelCount: UInt(gHEAD3_num_channels()), totalSamples: gHEAD1_total_samples(), loopPoint: gHEAD1_loop_start(), blockSize: gHEAD1_blocks_samples(), totalBlocks: gHEAD1_total_blocks())
+            return MGFileInformation(fileType: MalugriUtil.resolveAudioFormat(UInt(gFileType())),
+                                     codecCode: gFileCodec(),
+                                     codecString: MalugriUtil.resolveAudioCodec(UInt(gFileCodec())),
+                                     sampleRate: gHEAD1_sample_rate(), looping: gHEAD1_loop() == 1,
+                                     duration: Int(floor(Double(gHEAD1_total_samples()) / Double(gHEAD1_sample_rate()))),
+                                     channelCount: UInt(gHEAD3_num_channels()),
+                                     totalSamples: gHEAD1_total_samples(),
+                                     loopPoint: gHEAD1_loop_start(),
+                                     blockSize: gHEAD1_blocks_samples(),
+                                     totalBlocks: gHEAD1_total_blocks())
         }
     }
     public func loadFile(file: String) throws {
