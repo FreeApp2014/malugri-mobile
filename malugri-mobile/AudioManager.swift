@@ -12,135 +12,60 @@ import MediaPlayer
 
 
 var needLoop = true;
-var loopBuffer: AVAudioPCMBuffer = AVAudioPCMBuffer();
 
-class AudioManager: NSObject, MGAudioBackend {
-    
-    let audioPlayerNode = AVAudioPlayerNode()
-    
-    lazy var audioEngine: AVAudioEngine = {
-        let engine = AVAudioEngine()
-        
-        // Must happen only once.
-        engine.attach(self.audioPlayerNode)
-        
-        return engine
-    }()
-    var needsToPlay: Bool = true;
-    var wasUsed: Bool = false;
-    
-    // MARK: - Initialization
-    var output: EZOutput? = nil;
-    fileprivate let dataSource = DataSource();
-    
-    func initialize (format: AVAudioFormat){
-        self.output = EZOutput(dataSource: dataSource, inputFormat: AudioStreamBasicDescription(mSampleRate: Float64(format.sampleRate),
-                                                                        mFormatID: kAudioFormatLinearPCM,
-                                                                        mFormatFlags: kLinearPCMFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
-                                                                        mBytesPerPacket: 4,
-                                                                        mFramesPerPacket: 1,
-                                                                        mBytesPerFrame: 4,
-                                                                        mChannelsPerFrame: format.channelCount,
-                                                                        mBitsPerChannel: 16,
-                                                                        mReserved: 0));
-        var b: UInt32 = 4096; //Frame per slice value for the audio unit
+//MARK: - Helper structures
 
-        // Set frames per slice to 4096 to allow playback with locked screen
-        
-        EZAudioUtilities.checkResult(AudioUnitSetProperty(output!.outputAudioUnit,
-                                                          kAudioUnitProperty_MaximumFramesPerSlice,
-                                                          kAudioUnitScope_Global,
-                                                          0,
-                                                          &b,
-                                                          UInt32(MemoryLayout.size(ofValue: b))),
-                                     operation: "Failed to set maximum frames per slice on mixer node".cString(using: .utf8));
-    }
-    
-    var loopCount = 0;
-    var needsLoop: Bool {
-        get {
-            return needLoop;
-        }
-        set (a) {
-            needLoop = a;
-        }
-    }
-    var i: Double = 0;
-    
-    // MARK: - Getter functions
-    
-    var currentSampleNumber: UInt {
-        get {
-            return dataSource.counter;
-        }
-        set (a) {
-            dataSource.counter = a;
-        }
-    }
-    
-    func play() -> Void {
-        wasUsed = true;
-        output!.startPlayback();
-    }
-    
-    // MARK: - UI buttons
-    var state: Bool {
-        get {
-            return output!.isPlaying;
-        }
-    }
-    func varPlay() -> Bool {
-        return self.needsToPlay;
-    }
-    func resume() -> Void {
-        output!.startPlayback();
-    }
-    
-    func pause() -> Void {
-        output!.stopPlayback();
-    }
-    func stop() -> Void {
-        if (self.state) {output!.stopPlayback();}
-        closeBrstm();
-        dataSource.counter = 0;
-    }
+enum MGError: Error {
+    case ifstreamError(code: Int32), brstmReadError(code: UInt8, description: String)
 }
 
-// MARK: - Data source
+struct MGFileInformation {
+    public let fileType: String, codecCode: UInt32, codecString: String, sampleRate: UInt, looping: Bool, duration: Int, channelCount, totalSamples, loopPoint, blockSize, totalBlocks: UInt;
+}
 
-@objc fileprivate class DataSource: NSObject, EZOutputDataSource {
-    
-    public var counter: UInt = 0;
-    
-    func output(_ output: EZOutput!,
-                shouldFill audioBufferList: UnsafeMutablePointer<AudioBufferList>!,
-                withNumberOfFrames frames: UInt32,
-                timestamp: UnsafePointer<AudioTimeStamp>!) -> OSStatus {
-        if (counter > gHEAD1_total_samples()) {
-            if (needLoop) {
-                counter = gHEAD1_loop_start();
-            } else {
-                output.stopPlayback();
-            }
+// MARK: - Main player class
+
+class MalugriPlayer {
+    public let backend: MGAudioBackend;
+    public var currentFile: String = "";
+    public var fileInformation: MGFileInformation {
+        get {
+            return MGFileInformation(fileType: MalugriUtil.resolveAudioFormat(UInt(gFileType())), codecCode: gFileCodec(), codecString: MalugriUtil.resolveAudioCodec(UInt(gFileCodec())), sampleRate: gHEAD1_sample_rate(), looping: gHEAD1_loop() == 1, duration: Int(floor(Double(gHEAD1_total_samples()) / Double(gHEAD1_sample_rate()))), channelCount: UInt(gHEAD3_num_channels()), totalSamples: gHEAD1_total_samples(), loopPoint: gHEAD1_loop_start(), blockSize: gHEAD1_blocks_samples(), totalBlocks: gHEAD1_total_blocks())
         }
-        let samples = getbuffer(counter, frames);
-        let audioBuffer: UnsafeMutablePointer<Int16> = audioBufferList[0].mBuffers.mData!.assumingMemoryBound(to: Int16.self);
-        var i = 0, j = 0;
-        while (i < frames*2){
-            audioBuffer[Int(i)] = samples![0]![j];
-            audioBuffer[Int(i)+1] = samples![0]![j]
-            i+=2;
-            j+=1;
-        }
-        counter += UInt(frames);
-        return noErr;
     }
-    
+    public func loadFile(file: String) throws {
+        initStruct();
+        self.currentFile = file;
+        let pointer: UnsafePointer<Int8>? = NSString(string: file).utf8String;
+        let status = createIFSTREAMObject(strdup(pointer));
+        if (status != 1) {
+            throw MGError.ifstreamError(code: status);
+        }
+        let status2 = readFstreamBrstm();
+        if (status2 > 127) {
+            throw MGError.brstmReadError(code: status2, description: MalugriUtil.brstmReadErrorCode[status2] ?? "Unknown error");
+        }
+        backend.initialize(format: self.fileInformation);
+    }
+    public init (using backend: MGAudioBackend) {
+        self.backend = backend;
+    }
+    public func closeFile() {
+        closeBrstm();
+    }
+    public func fullyDecode() -> UnsafeMutablePointer<UnsafeMutablePointer<Int16>?>? {
+        let file = FileHandle.init(forReadingAtPath: self.currentFile)!.availableData;
+        _ = file.withUnsafeBytes { (u8Ptr: UnsafePointer<UInt8>) -> Bool in
+            readABrstm(u8Ptr, 1, true);
+            return true;
+        }
+        return gPCM_samples();
+    }
 }
 
 protocol MGAudioBackend {
     var currentSampleNumber: UInt { get set };
-    func initialize (format: AVAudioFormat) -> Void;
+    func initialize (format: MGFileInformation) -> Void;
     func resume() -> Void;
     func pause() -> Void;
     func stop() -> Void;

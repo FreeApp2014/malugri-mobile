@@ -17,6 +17,7 @@ var decodeMode = 0;
 
 class ViewController: UIViewController, UIDocumentPickerDelegate {
 
+    // MARK: - Initial setup
     @objc func notificationHandler(notification:  Notification){
         self.labelFN.text! = (notification.object as! URL).lastPathComponent;
         handleFile(path: (notification.object as! URL).path);
@@ -26,7 +27,6 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(self.notificationHandler), name: NSNotification.Name(rawValue: "FileOpen"), object: nil);
-        // Do any additional setup after loading the view, typically from a nib.
     }
     func setupRemoteTransportControls() {
         // Get the shared MPRemoteCommandCenter
@@ -35,7 +35,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         
         // Add handler for Play Command
         commandCenter.playCommand.addTarget { [unowned self] event in
-            self.am.resume();
+            self.playerController.backend.play();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;
             self.pauseBTN.setTitle("Pause", for: UIControl.State.normal);
             return .success;
@@ -44,7 +44,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         
         // Add handler for Pause Command
         commandCenter.pauseCommand.addTarget { [unowned self] event in
-            self.am.pause();
+            self.playerController.backend.pause();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
             //if lastRenderTime returned overblown sample number fix the brain retardation before pushing 
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0;
@@ -62,6 +62,9 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         // Set the metadata
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
+    
+    // MARK: - Document handler
+    
     @IBAction func buttonclick(_ sender: Any) {
         let documentPicker = UIDocumentPickerViewController(documentTypes: ["space.freeappsw.malugri-mobile.brstm", "space.freeappsw.malugri-mobile.bfstm"], in: .import);
         documentPicker.delegate = self
@@ -72,108 +75,52 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         handleFile(path: urls[0].path);
     }
     @IBOutlet weak var labelFN: UILabel!
-    func readFile(path: String, convert: Bool = false) -> Bool {
-        initStruct();
-        do {
-            // Playback mode, for this implementation always 1
-//            let fileat = try FileManager.default.attributesOfItem(atPath: path);
-//            filesize = fileat[.size] as? UInt64 ?? UInt64(0);
-//            if (filesize >= 5000000 && self.choiceGB.indexOfSelectedItem == 0) {
-//                decodeMode = 1;
-//            } else if (self.choiceGB.indexOfSelectedItem == 1){
-//                decodeMode = 0;
-//            } else if (self.choiceGB.indexOfSelectedItem == 2) {
-//                decodeMode = 1;
-//            }
-            decodeMode = 1;
-        } catch let error as NSError {
-            print("FileAttribute error: \(error)");
-            return false;
-        }
-        if (convert) {decodeMode = 0;}
-        switch(decodeMode){
-        case 0: let file = FileHandle.init(forReadingAtPath: path)!.availableData;
-        let resultRead = file.withUnsafeBytes { (u8Ptr: UnsafePointer<UInt8>) -> Bool in
-            let stat = readABrstm(u8Ptr, 1, true);
-            if (stat > 127){
-                MalugriUtil.popupAlert(parent: self, title:"Error reading file", message: "brstm_read returned error " + String(stat));
-                return false;
-            }
-            return true;
-        }
-        if (!resultRead) {return false};
-        break;
-        case 1: let pointer: UnsafePointer<Int8>? = NSString(string: path).utf8String;
-        let stati = createIFSTREAMObject(strdup(pointer)!);
-        if (stati != 1){
-            MalugriUtil.popupAlert(parent: self, title:"Error reading file", message: "ifstream::open returned error " + String(stati));
-            return false;
-        }
-        let stat = readFstreamBrstm();
-        if (stat > 127){
-            MalugriUtil.popupAlert(parent: self, title:"Error reading file", message: "brstm_read returned error " + String(stat));
-            return false;
-        }
-        break;
-        default: break;
-        }
-        return true;
-    }
-    let am = AudioManager();
+
+    var playerController = MalugriPlayer(using: MGEZAudioBackend());
+    
+    // MARK: Main function to start playback
+    
     func handleFile(path: String) {
-        if (readFile(path: path)){
-            if(am.wasUsed){
-                am.stop();
-                print("a");
-                self.am.i = 0;
-                Thread.sleep(forTimeInterval: 0.05);
-            }
-            //Put stuff to the information screen
-            DispatchQueue.main.async {
-                self.lblFileType.text! = MalugriUtil.resolveAudioFormat(UInt(gFileType()));
-                self.lblCodec.text! = MalugriUtil.resolveAudioCodec(UInt(gFileCodec()));
-                self.lblSampleRate.text! = String(gHEAD1_sample_rate()) + " Hz";
-                self.lblLoop.text! = (gHEAD1_loop() == 1 ? "Yes" : "No");
-                self.lblTotalSamples.text! = String(gHEAD1_total_samples());
-                self.lblDuration.text! = String(floor(Double(gHEAD1_total_samples()) / Double(gHEAD1_sample_rate()))) + " seconds";
-                self.lblLoopPoint.text! = String(gHEAD1_loop_start());
-                self.lblBlockSize.text! = String(gHEAD1_blocks_samples()) + " samples";
-                self.lblTotalBlocks.text! = String(gHEAD1_total_blocks());
-            }
-        
-            //Configure iOS media api crap
-            setupRemoteTransportControls();
-            publishDataToMPNP();
-            let session = AVAudioSession.sharedInstance()
-            do {
-                try session.setCategory(AVAudioSession.Category.playback,
-                                        mode: AVAudioSession.Mode.spokenAudio,
-                                        options: [])
-                try session.setActive(true)
-            } catch let error as NSError {
-                print("Failed to set the audio session category and mode: \(error.localizedDescription)")
-                
-            }
-            //Actual playback
-            switch (decodeMode){
-            case 0:
-                let channelCount = (gHEAD3_num_channels() > 2 ? 2 : gHEAD3_num_channels());
-                format = AVAudioFormat.init(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: Double(gHEAD1_sample_rate()), channels: UInt32(channelCount), interleaved: false)!;
-                am.initialize(format: format);
-                am.needsLoop = (gHEAD1_loop() == 1);
-                self.am.play();
-                break;
-            case 1:
-                let channelCount = (gHEAD3_num_channels() > 2 ? 2 : gHEAD3_num_channels());
-                format = AVAudioFormat.init(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: Double(gHEAD1_sample_rate()), channels: UInt32(channelCount), interleaved: false)!;
-                am.initialize(format: format);
-                am.needsLoop = (gHEAD1_loop() == 1);
-                self.am.play();
-                break
-            default:
-                print("if this is printed then idk what happened to this world")
-            }
+        do {
+            try playerController.loadFile(file: path)
+        } catch MGError.brstmReadError(let code, description) {
+            MalugriUtil.popupAlert(parent: self, title: "Error opening file" , message: "brstm_read: " + description + " (code " + String(code) + ")");
+        } catch MGError.ifstreamError(let code) {
+            MalugriUtil.popupAlert(parent: self, title: "Error opening file", message: "ifstream::open returned error code " + String(code))
+        } catch {
+            MalugriUtil.popupAlert(parent: self, title: "Internal error", message: "An unexpected error has occurred.")
         }
+        //Put stuff to the information screen
+        DispatchQueue.main.async {
+            let info = self.playerController.fileInformation;
+            self.lblFileType.text! = info.fileType;
+            self.lblCodec.text! = info.codecString;
+            self.lblSampleRate.text! = String(info.sampleRate) + " Hz";
+            self.lblLoop.text! = (info.looping ? "Yes" : "No");
+            self.lblTotalSamples.text! = String(info.totalSamples);
+            self.lblDuration.text! = String(info.duration) + " seconds";
+            self.lblLoopPoint.text! = String(info.loopPoint);
+            self.lblBlockSize.text! = String(info.blockSize) + " samples";
+            self.lblTotalBlocks.text! = String(info.totalBlocks);
+        }
+        
+        //Configure iOS media api crap
+        setupRemoteTransportControls();
+        publishDataToMPNP();
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(AVAudioSession.Category.playback,
+                                    mode: AVAudioSession.Mode.spokenAudio,
+                                    options: [])
+            try session.setActive(true)
+        } catch let error as NSError {
+            print("Failed to set the audio session category and mode: \(error.localizedDescription)")
+                
+        }
+        
+        //Actual playback
+        playerController.backend.play();
+  
     }
     
     // Field labels
@@ -190,16 +137,17 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     @IBOutlet weak var pauseBTN: UIButton!
     
     @IBAction func stopButton(_ sender: Any) {
-        self.am.stop();
+        self.playerController.backend.stop();
+        self.playerController.closeFile();
     }
     @IBAction func pauseBtn(_ sender: UIButton) {
         if (sender.currentTitle! == "Pause") {
-            self.am.pause()
+            self.playerController.backend.pause();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0;
             sender.setTitle("Resume", for: UIControl.State.normal);
         } else {
-            self.am.resume()
+            self.playerController.backend.play();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;
             sender.setTitle("Pause", for: UIControl.State.normal);
         }

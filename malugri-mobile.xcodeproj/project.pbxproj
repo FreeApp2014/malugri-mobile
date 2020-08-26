@@ -19,6 +19,7 @@
 		84970D1124EEB20000D6C82F /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84970D0E24EEB1FF00D6C82F /* Accelerate.framework */; };
 		84970D1324EEB20000D6C82F /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84970D1024EEB1FF00D6C82F /* AudioToolbox.framework */; };
 		84970D1D24EFCDF000D6C82F /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84970D1C24EFCDF000D6C82F /* Util.swift */; };
+		849B614324F6AAE2003F77B2 /* AudioBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849B614224F6AAE2003F77B2 /* AudioBackend.swift */; };
 		97B9FC57F7A6FCB22F45C7C6 /* libPods-malugri-mobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D2BE4CE3B68AFAF14A4D67D9 /* libPods-malugri-mobile.a */; };
 /* End PBXBuildFile section */
 
@@ -40,6 +41,7 @@
 		84970D0E24EEB1FF00D6C82F /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		84970D1024EEB1FF00D6C82F /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		84970D1C24EFCDF000D6C82F /* Util.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Util.swift; sourceTree = "<group>"; };
+		849B614224F6AAE2003F77B2 /* AudioBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioBackend.swift; sourceTree = "<group>"; };
 		D2BE4CE3B68AFAF14A4D67D9 /* libPods-malugri-mobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-malugri-mobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -115,6 +117,7 @@
 				842CCBDD24DC5840005899C4 /* ViewController.swift */,
 				842CCBDF24DC5840005899C4 /* Main.storyboard */,
 				8423E54124DD6B1E00D127C8 /* AudioManager.swift */,
+				849B614224F6AAE2003F77B2 /* AudioBackend.swift */,
 				84970D1C24EFCDF000D6C82F /* Util.swift */,
 				842CCBE224DC5842005899C4 /* Assets.xcassets */,
 				842CCBE424DC5842005899C4 /* LaunchScreen.storyboard */,
@@ -229,6 +232,7 @@
 				842CCBDE24DC5840005899C4 /* ViewController.swift in Sources */,
 				8423E53A24DD5BE900D127C8 /* brstm-main.cpp in Sources */,
 				84970D1D24EFCDF000D6C82F /* Util.swift in Sources */,
+				849B614324F6AAE2003F77B2 /* AudioBackend.swift in Sources */,
 				8423E54224DD6B1E00D127C8 /* AudioManager.swift in Sources */,
 				842CCBDC24DC5840005899C4 /* AppDelegate.swift in Sources */,
 			);

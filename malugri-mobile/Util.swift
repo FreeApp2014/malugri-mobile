@@ -33,4 +33,16 @@ class MalugriUtil {
         asToPresent.addAction(UIAlertAction.init(title: "Dismiss", style: UIAlertAction.Style.cancel, handler: nil));
         parent.present(asToPresent, animated: true, completion: nil);
     }
+    static let brstmReadErrorCode: [UInt8: String] = [
+        0: "No error",
+        255: "Invalid file",
+        250: "Invalid file",
+        249: "Too many channels in file",
+        248: "Too many tracks in file",
+        244: "Unknown track description type",
+        240: "Invalid file",
+        230: "Invalid file",
+        220: "Audio codec not supported",
+        210: "File not supported"
+    ]
 }
