@@ -40,6 +40,38 @@
 			<key>LSSupportsOpeningDocumentsInPlace</key>
 			<true/>
 		</dict>
+        <dict>
+            <key>CFBundleTypeIconFiles</key>
+            <array/>
+            <key>CFBundleTypeName</key>
+            <string>Binary CTR Stream audio file</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Owner</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>space.freeappsw.malugri-mobile.bcstm</string>
+            </array>
+            <key>LSSupportsOpeningDocumentsInPlace</key>
+            <true/>
+        </dict>
+        <dict>
+            <key>CFBundleTypeIconFiles</key>
+            <array/>
+            <key>CFBundleTypeName</key>
+            <string>Nintendo BWAV audio file</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Owner</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>space.freeappsw.malugri-mobile.bwav</string>
+            </array>
+            <key>LSSupportsOpeningDocumentsInPlace</key>
+            <true/>
+        </dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
@@ -126,6 +158,48 @@
 				</array>
 			</dict>
 		</dict>
+        <dict>
+            <key>LSSupportsOpeningDocumentsInPlace</key>
+            <true/>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+            </array>
+            <key>UTTypeDescription</key>
+            <string>Binary CTR Stream</string>
+            <key>UTTypeIconFiles</key>
+            <array/>
+            <key>UTTypeIdentifier</key>
+            <string>space.freeappsw.malugri-mobile.bcstm</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>bcstm</string>
+                </array>
+            </dict>
+        </dict>
+        <dict>
+            <key>LSSupportsOpeningDocumentsInPlace</key>
+            <true/>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+            </array>
+            <key>UTTypeDescription</key>
+            <string>Nintendo BWAV</string>
+            <key>UTTypeIconFiles</key>
+            <array/>
+            <key>UTTypeIdentifier</key>
+            <string>space.freeappsw.malugri-mobile.bwav</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>bwav</string>
+                </array>
+            </dict>
+        </dict>
 	</array>
 </dict>
 </plist>
