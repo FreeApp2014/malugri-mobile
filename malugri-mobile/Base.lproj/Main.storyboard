@@ -35,7 +35,7 @@
                                         </connections>
                                     </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="S6S-dg-r6d"/>
-                                    <barButtonItem title="Stop" id="fa7-To-1WC">
+                                    <barButtonItem enabled="NO" title="Stop" id="fa7-To-1WC">
                                         <connections>
                                             <action selector="stopButton:" destination="BYZ-38-t0r" id="hEt-R9-YUk"/>
                                         </connections>
@@ -45,6 +45,9 @@
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uth-8e-0fS">
                                 <rect key="frame" x="316" y="575" width="49" height="31"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                <connections>
+                                    <action selector="loopToggle:" destination="BYZ-38-t0r" eventType="valueChanged" id="onm-cm-ZaI"/>
+                                </connections>
                             </switch>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Loop" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ccw-oe-SVT">
                                 <rect key="frame" x="16" y="580" width="262" height="21"/>
@@ -193,7 +196,7 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gCi-c8-QuQ">
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gCi-c8-QuQ">
                                 <rect key="frame" x="0.0" y="531" width="375" height="36"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
@@ -240,7 +243,10 @@
                         <outlet property="lblSampleRate" destination="DSk-7Y-oqT" id="Hgb-iJ-bmQ"/>
                         <outlet property="lblTotalBlocks" destination="UpX-kV-kZS" id="Kg5-05-EhY"/>
                         <outlet property="lblTotalSamples" destination="g33-n5-w57" id="inO-Ko-CdD"/>
+                        <outlet property="loadFileBTN" destination="M10-jC-9O5" id="sBB-0y-HdH"/>
+                        <outlet property="loopToggle" destination="uth-8e-0fS" id="caZ-Pe-0nT"/>
                         <outlet property="pauseBTN" destination="gCi-c8-QuQ" id="m8x-os-v88"/>
+                        <outlet property="stopBTN" destination="fa7-To-1WC" id="VdO-N7-FaL"/>
                         <outlet property="timeSlider" destination="CmG-3H-QJk" id="RTT-Fh-0CO"/>
                     </connections>
                 </viewController>

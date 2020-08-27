@@ -12,9 +12,6 @@ import AVFoundation
 // MARK: - Default EZAudio backend
 class MGEZAudioBackend: NSObject, MGAudioBackend {
 
-    var needsToPlay: Bool = true;
-    var wasUsed: Bool = false;
-    
     // MARK: - Initialization
     var output: EZOutput? = nil;
     fileprivate let dataSource = DataSource();
@@ -42,17 +39,15 @@ class MGEZAudioBackend: NSObject, MGAudioBackend {
                                      operation: "Failed to set maximum frames per slice on mixer node".cString(using: .utf8));
     }
     
-    var loopCount = 0;
     var needsLoop: Bool {
         get {
-            return needLoop;
+            return dataSource.needLoop;
         }
         set (a) {
-            needLoop = a;
+            dataSource.needLoop = a;
         }
     }
-    var i: Double = 0;
-    
+
     // MARK: - Getter functions
     
     var currentSampleNumber: UInt {
@@ -65,7 +60,6 @@ class MGEZAudioBackend: NSObject, MGAudioBackend {
     }
     
     func play() -> Void {
-        wasUsed = true;
         output!.startPlayback();
     }
     
@@ -75,9 +69,7 @@ class MGEZAudioBackend: NSObject, MGAudioBackend {
             return output!.isPlaying;
         }
     }
-    func varPlay() -> Bool {
-        return self.needsToPlay;
-    }
+    
     func resume() -> Void {
         output!.startPlayback();
     }
@@ -96,7 +88,7 @@ class MGEZAudioBackend: NSObject, MGAudioBackend {
 @objc fileprivate class DataSource: NSObject, EZOutputDataSource {
     
     public var counter: UInt = 0;
-    
+    public var needLoop: Bool = true;
     func output(_ output: EZOutput!,
                 shouldFill audioBufferList: UnsafeMutablePointer<AudioBufferList>!,
                 withNumberOfFrames frames: UInt32,

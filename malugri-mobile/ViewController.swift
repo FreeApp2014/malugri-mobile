@@ -80,7 +80,11 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     // MARK: - Document handler
     
     @IBAction func buttonclick(_ sender: Any) {
-        let documentPicker = UIDocumentPickerViewController(documentTypes: ["space.freeappsw.malugri-mobile.brstm", "space.freeappsw.malugri-mobile.bfstm"], in: .import);
+        let documentPicker = UIDocumentPickerViewController(documentTypes: ["space.freeappsw.malugri-mobile.brstm",
+                                                                            "space.freeappsw.malugri-mobile.bfstm",
+                                                                            "space.freeappsw.malugri-mobile.bwav",
+                                                                            "space.freeappsw.malugri-mobile.bcstm"],
+                                                            in: .import);
         documentPicker.delegate = self
         self.present(documentPicker, animated: true);
     }
@@ -98,11 +102,17 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         do {
             try playerController.loadFile(file: path)
         } catch MGError.brstmReadError(let code, description) {
-            MalugriUtil.popupAlert(parent: self, title: "Error opening file" , message: "brstm_read: " + description + " (code " + String(code) + ")");
+            MalugriUtil.popupAlert(parent: self,
+                                   title: "Error opening file" ,
+                                   message: "brstm_read: " + description + " (code " + String(code) + ")");
         } catch MGError.ifstreamError(let code) {
-            MalugriUtil.popupAlert(parent: self, title: "Error opening file", message: "ifstream::open returned error code " + String(code))
+            MalugriUtil.popupAlert(parent: self,
+                                   title: "Error opening file",
+                                   message: "ifstream::open returned error code " + String(code))
         } catch {
-            MalugriUtil.popupAlert(parent: self, title: "Internal error", message: "An unexpected error has occurred.")
+            MalugriUtil.popupAlert(parent: self,
+                                   title: "Internal error",
+                                   message: "An unexpected error has occurred.")
         }
         //Put stuff to the information screen
         DispatchQueue.main.async {
@@ -135,6 +145,14 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         
         //Actual playback
         playerController.backend.play();
+        self.playerController.backend.needsLoop = self.playerController.fileInformation.looping;
+        self.loopToggle.isOn = self.playerController.fileInformation.looping;
+        
+        
+        //Prevent action buttons from being pressed
+        self.pauseBTN.isEnabled = true;
+        self.stopBTN.isEnabled = true;
+        self.loadFileBTN.isEnabled = false;
         
         DispatchQueue.global().async {
             while (self.playerController.backend.state) {
@@ -143,6 +161,11 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
                     self.timeSlider.value = Float(self.playerController.backend.currentSampleNumber) / Float(self.playerController.fileInformation.totalSamples);
                 }
                 Thread.sleep(forTimeInterval: 0.05);
+            }
+            DispatchQueue.main.async {
+                if (!self.playerController.backend.needsLoop && self.pauseBTN.currentTitle! == "Pause"){
+                    self.stopButton(self.stopBTN);
+                }
             }
         }
     }
@@ -168,17 +191,30 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     @IBOutlet weak var lblTotalBlocks: UILabel!
     @IBOutlet weak var lblTotalSamples: UILabel!
     @IBOutlet weak var pauseBTN: UIButton!
+    @IBOutlet weak var stopBTN: UIBarButtonItem!
+    @IBOutlet weak var loadFileBTN: UIBarButtonItem!
+    @IBOutlet weak var loopToggle: UISwitch!
     
-    @IBAction func stopButton(_ sender: Any) {
+    
+    @IBAction func loopToggle(_ sender: UISwitch) {
+        self.playerController.backend.needsLoop = sender.isOn;
+    }
+    
+    @IBAction func stopButton(_ sender: UIBarButtonItem) {
         self.playerController.backend.stop();
         self.playerController.closeFile();
+        self.pauseBTN.isEnabled = false;
+        self.pauseBTN.setTitle("Pause", for: UIControl.State.normal);
+        self.loadFileBTN.isEnabled = true;
+        sender.isEnabled = false;
     }
+    
     @IBAction func pauseBtn(_ sender: UIButton) {
         if (sender.currentTitle! == "Pause") {
+            sender.setTitle("Resume", for: UIControl.State.normal);
             self.playerController.backend.pause();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(self.playerController.backend.currentSampleNumber / self.playerController.fileInformation.sampleRate);
-            sender.setTitle("Resume", for: UIControl.State.normal);
         } else {
             self.playerController.backend.play();
             DispatchQueue.global().async {
@@ -188,6 +224,11 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
                         self.timeSlider.value = Float(self.playerController.backend.currentSampleNumber) / Float(self.playerController.fileInformation.totalSamples);
                     }
                     Thread.sleep(forTimeInterval: 0.05);
+                }
+                DispatchQueue.main.async {
+                    if (!self.playerController.backend.needsLoop && self.pauseBTN.currentTitle! == "Pause"){
+                        self.stopButton(self.stopBTN);
+                    }
                 }
             }
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0;

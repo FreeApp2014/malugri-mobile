@@ -11,8 +11,6 @@ import AVFoundation
 import MediaPlayer
 
 
-var needLoop = true;
-
 //MARK: - Helper structures
 
 enum MGError: Error {
@@ -29,7 +27,7 @@ struct MGFileInformation {
 
 class MalugriPlayer {
     public var backend: MGAudioBackend;
-    public var currentFile: String = "";
+    public var currentFile: String? = nil;
     public var fileInformation: MGFileInformation {
         get {
             return MGFileInformation(fileType: MalugriUtil.resolveAudioFormat(UInt(gFileType())),
@@ -63,9 +61,10 @@ class MalugriPlayer {
     }
     public func closeFile() {
         closeBrstm();
+        self.currentFile = nil;
     }
     public func fullyDecode() -> UnsafeMutablePointer<UnsafeMutablePointer<Int16>?>? {
-        let file = FileHandle.init(forReadingAtPath: self.currentFile)!.availableData;
+        let file = FileHandle.init(forReadingAtPath: self.currentFile!)!.availableData;
         _ = file.withUnsafeBytes { (u8Ptr: UnsafePointer<UInt8>) -> Bool in
             readABrstm(u8Ptr, 1, true);
             return true;
