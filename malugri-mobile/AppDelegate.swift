@@ -20,6 +20,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ app: UIApplication, open inputURL: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        let opensInPlace = options[.openInPlace] != nil
+        _ = opensInPlace ? inputURL.startAccessingSecurityScopedResource() : nil
         NotificationCenter.default.post(name: Notification.Name("FileOpen"), object: inputURL);
         return true;
     }

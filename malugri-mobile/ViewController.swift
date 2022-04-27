@@ -16,10 +16,14 @@ var format: AVAudioFormat = AVAudioFormat();
 var decodeMode = 0;
 
 class ViewController: UIViewController, UIDocumentPickerDelegate {
-
     // MARK: - Initial setup
+    var playerController = MalugriPlayer(using: MGEZAudioBackend());
+    
     @objc func notificationHandler(notification:  Notification){
         self.labelFN.text! = (notification.object as! URL).lastPathComponent;
+        MalugriUtil.popupAlert(parent: self,
+                               title: "opening file" ,
+                               message: (notification.object as! URL).path);
         handleFile(path: (notification.object as! URL).path);
     }
     
@@ -33,6 +37,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(self.notificationHandler), name: NSNotification.Name(rawValue: "FileOpen"), object: nil);
         NotificationCenter.default.addObserver(self, selector: #selector(self.exitNotification), name: NSNotification.Name(rawValue: "ExitPlayer"), object: nil);
     }
+    // MARK: - MPNowPlayingInfoCenter
     func setupRemoteTransportControls() {
         // Get the shared MPRemoteCommandCenter
         let commandCenter = MPRemoteCommandCenter.shared()
@@ -61,9 +66,18 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
             self.playerController.backend.pause();
             MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0;
             //if lastRenderTime returned overblown sample number fix the brain retardation before pushing 
-            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0;
+            MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(self.playerController.backend.currentSampleNumber / self.playerController.fileInformation.sampleRate);
             self.pauseBTN.setTitle("Resume", for: UIControl.State.normal);
             return .success;
+        }
+        
+        // Add handler for seeking
+        commandCenter.changePlaybackPositionCommand.isEnabled = true
+        commandCenter.changePlaybackPositionCommand.addTarget { event -> MPRemoteCommandHandlerStatus in
+            let event = event as! MPChangePlaybackPositionCommandEvent
+            let newTime: UInt = UInt(event.positionTime * Double(self.playerController.fileInformation.sampleRate))
+            self.playerController.backend.currentSampleNumber = newTime;
+            return .success
         }
     }
     
@@ -84,17 +98,17 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
                                                                             "space.freeappsw.malugri-mobile.bfstm",
                                                                             "space.freeappsw.malugri-mobile.bwav",
                                                                             "space.freeappsw.malugri-mobile.bcstm"],
-                                                            in: .import);
+                                                            in: .open);
         documentPicker.delegate = self
         self.present(documentPicker, animated: true);
     }
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         self.labelFN.text! = urls[0].lastPathComponent;
+        _ = urls[0].startAccessingSecurityScopedResource()
         handleFile(path: urls[0].path);
     }
     @IBOutlet weak var labelFN: UILabel!
 
-    var playerController = MalugriPlayer(using: MGEZAudioBackend());
     
     // MARK: Main function to start playback
     
@@ -105,27 +119,27 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
             MalugriUtil.popupAlert(parent: self,
                                    title: "Error opening file" ,
                                    message: "brstm_read: " + description + " (code " + String(code) + ")");
+            return;
         } catch MGError.ifstreamError(let code) {
             MalugriUtil.popupAlert(parent: self,
                                    title: "Error opening file",
                                    message: "ifstream::open returned error code " + String(code))
+            return;
         } catch {
             MalugriUtil.popupAlert(parent: self,
                                    title: "Internal error",
                                    message: "An unexpected error has occurred.")
+            return;
         }
         //Put stuff to the information screen
         DispatchQueue.main.async {
             let info = self.playerController.fileInformation;
-            self.lblFileType.text! = info.fileType;
+            self.lblFileType.text! = info.fileType + " · " + String(info.sampleRate) + " Hz";
             self.lblCodec.text! = info.codecString;
-            self.lblSampleRate.text! = String(info.sampleRate) + " Hz";
             self.lblLoop.text! = (info.looping ? "Yes" : "No");
-            self.lblTotalSamples.text! = String(info.totalSamples);
+            self.lblTotalSamples.text! = String(info.totalBlocks) + " blocks by " + String(info.blockSize) + " = " + String(info.totalSamples);
             self.lblDuration.text! = String(info.duration) + " seconds";
             self.lblLoopPoint.text! = String(info.loopPoint);
-            self.lblBlockSize.text! = String(info.blockSize) + " samples";
-            self.lblTotalBlocks.text! = String(info.totalBlocks);
             self.TotalTimeLabel.text! = info.duration.hmsString;
         }
         
@@ -177,18 +191,16 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
     
     @IBAction func seek(_ sender: Any) {
         self.playerController.backend.currentSampleNumber = UInt(self.timeSlider.value * Float(self.playerController.fileInformation.totalSamples));
+        MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(self.playerController.backend.currentSampleNumber / self.playerController.fileInformation.sampleRate);
     }
     
     // Field labels
     
     @IBOutlet weak var lblFileType: UILabel!
     @IBOutlet weak var lblCodec: UILabel!
-    @IBOutlet weak var lblSampleRate: UILabel!
     @IBOutlet weak var lblLoop: UILabel!
     @IBOutlet weak var lblLoopPoint: UILabel!
     @IBOutlet weak var lblDuration: UILabel!
-    @IBOutlet weak var lblBlockSize: UILabel!
-    @IBOutlet weak var lblTotalBlocks: UILabel!
     @IBOutlet weak var lblTotalSamples: UILabel!
     @IBOutlet weak var pauseBTN: UIButton!
     @IBOutlet weak var stopBTN: UIBarButtonItem!
@@ -222,6 +234,7 @@ class ViewController: UIViewController, UIDocumentPickerDelegate {
                     DispatchQueue.main.async {
                         self.ElapsedTimeLabel.text = Int(self.playerController.backend.currentSampleNumber / self.playerController.fileInformation.sampleRate).hmsString;
                         self.timeSlider.value = Float(self.playerController.backend.currentSampleNumber) / Float(self.playerController.fileInformation.totalSamples);
+                        MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyElapsedPlaybackTime] = Int(self.playerController.backend.currentSampleNumber / self.playerController.fileInformation.sampleRate);
                     }
                     Thread.sleep(forTimeInterval: 0.05);
                 }

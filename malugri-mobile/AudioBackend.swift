@@ -16,6 +16,11 @@ class MGEZAudioBackend: NSObject, MGAudioBackend {
     var output: EZOutput? = nil;
     fileprivate let dataSource = DataSource();
     
+    /**
+     Initializes the backend to make it ready to play audio
+     
+     - parameter format: The format of the audio that will get played
+     */
     func initialize (format: MGFileInformation){
         self.output = EZOutput(dataSource: dataSource, inputFormat: AudioStreamBasicDescription(mSampleRate: Float64(format.sampleRate),
                                                                                                 mFormatID: kAudioFormatLinearPCM,
@@ -50,6 +55,7 @@ class MGEZAudioBackend: NSObject, MGAudioBackend {
 
     // MARK: - Getter functions
     
+    /// The sample number that is now processed by this backend
     var currentSampleNumber: UInt {
         get {
             return dataSource.counter;
@@ -58,7 +64,7 @@ class MGEZAudioBackend: NSObject, MGAudioBackend {
             dataSource.counter = a;
         }
     }
-    
+    /// Start playing
     func play() -> Void {
         output!.startPlayback();
     }

@@ -42,6 +42,12 @@ class MalugriPlayer {
                                      totalBlocks: gHEAD1_total_blocks())
         }
     }
+    /**
+     Loads the file into the Player object
+     
+     - parameter file: path to the file
+     - throws `MGError` values
+     */
     public func loadFile(file: String) throws {
         initStruct();
         self.currentFile = file;
@@ -56,13 +62,21 @@ class MalugriPlayer {
         }
         backend.initialize(format: self.fileInformation);
     }
+    
+    /**
+    Create a new player object
+     - parameter backend: audio backend used to play audio
+     */
     public init (using backend: MGAudioBackend) {
         self.backend = backend;
     }
+    /// Close the file and stop accessing it
     public func closeFile() {
         closeBrstm();
+        URL.init(fileURLWithPath: self.currentFile!).stopAccessingSecurityScopedResource();
         self.currentFile = nil;
     }
+    /// Get a full buffer with the decoded audio samples, as a pointer
     public func fullyDecode() -> UnsafeMutablePointer<UnsafeMutablePointer<Int16>?>? {
         let file = FileHandle.init(forReadingAtPath: self.currentFile!)!.availableData;
         _ = file.withUnsafeBytes { (u8Ptr: UnsafePointer<UInt8>) -> Bool in
